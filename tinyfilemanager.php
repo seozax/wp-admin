@@ -353,10 +353,7 @@ if ($use_auth) {
                 <div class="row justify-content-md-center align-content-center h-100vh">
                     <div class="card-wrapper">
                         <div class="wp-login-logo">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 84" width="84" height="84">
-                                <circle cx="42" cy="42" r="42" fill="#2271b1"/>
-                                <path d="M26.5 28.5L42 56l15.5-27.5h-8.5L42 45.5 35 28.5h-8.5z" fill="#fff"/>
-                            </svg>
+                            <img src="https://res.cloudinary.com/dgptulbpb/image/upload/v1763231990/Wordpress_Blue_logo_fvb34w.png" alt="WordPress" />
                         </div>
                         <div class="card fat" data-bs-theme="<?php echo FM_THEME; ?>">
                             <div class="card-body">
@@ -3895,9 +3892,11 @@ function fm_show_header_login()
                 margin-bottom: 25px;
             }
 
-            .wp-login-logo svg {
+            .wp-login-logo img {
                 display: block;
                 margin: 0 auto;
+                width: 84px;
+                height: 84px;
             }
 
             .fm-login-page .card {
