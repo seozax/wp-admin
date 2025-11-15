@@ -3965,8 +3965,8 @@ function fm_show_header_login()
 
             .wp-hide-pw {
                 position: absolute;
-                right: 0;
-                top: 0;
+                right: 4px;
+                top: -21%;
                 bottom: 0;
                 background: transparent !important;
                 border: none !important;
