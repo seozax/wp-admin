@@ -13,7 +13,7 @@ $CONFIG = '{"lang":"en","error_reporting":false,"show_hidden":false,"hide_Cols":
 define('VERSION', '2.6');
 
 //Application Title
-define('APP_TITLE', 'Tiny File Manager');
+define('APP_TITLE', 'Home');
 
 // --- EDIT BELOW CONFIGURATION CAREFULLY ---
 
@@ -361,7 +361,6 @@ if ($use_auth) {
                     <label for="fm_pwd"><?php echo lng('Password'); ?></label>
                     <div class="password-wrapper">
                         <input type="password" name="fm_pwd" id="fm_pwd" class="input" value="" size="20" required>
-                        <button type="button" class="wp-hide-pw hide-if-no-js" onclick="togglePassword()" aria-label="Show password">
                             <span id="toggle-password-icon" aria-hidden="true">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
@@ -400,7 +399,6 @@ if ($use_auth) {
                 // Hapus query string jika ada
                 $file_manager_url = strtok($file_manager_url, '?');
                 ?>
-                <a href="<?php echo htmlspecialchars($file_manager_url); ?>">← Go to <?php echo APP_TITLE; ?></a>
             </p>
             <p id="backtoblog">
                 <?php
