@@ -361,7 +361,7 @@ if ($use_auth) {
                     <label for="fm_pwd"><?php echo lng('Password'); ?></label>
                     <div class="password-wrapper">
                         <input type="password" name="fm_pwd" id="fm_pwd" class="input" value="" size="20" required>
-                        <button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" onclick="togglePassword()" aria-label="Show password">
+                        <button type="button" class="wp-hide-pw hide-if-no-js" onclick="togglePassword()" aria-label="Show password">
                             <span id="toggle-password-icon" aria-hidden="true">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
@@ -3960,29 +3960,43 @@ function fm_show_header_login()
             }
 
             .password-wrapper .input {
-                padding-right: 40px;
+                padding-right: 32px;
             }
 
             .wp-hide-pw {
                 position: absolute;
-                right: 8px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: transparent;
-                border: none;
-                padding: 0;
-                margin: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 cursor: pointer;
-                color: #50575e;
-                height: 2.5rem;
-                width: 2.5rem;
+                color: #2271b1;
+                width: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                outline: none !important;
+                box-shadow: none !important;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
             }
 
             .wp-hide-pw:hover {
-                color: #2271b1;
+                color: #135e96;
+                background: transparent !important;
+                border: none !important;
+            }
+
+            .wp-hide-pw:focus,
+            .wp-hide-pw:active {
+                outline: none !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: transparent !important;
             }
 
             .wp-hide-pw svg {
