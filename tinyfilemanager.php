@@ -361,8 +361,6 @@ if ($use_auth) {
                     <label for="fm_pwd"><?php echo lng('Password'); ?></label>
                     <div class="password-wrapper">
                         <input type="password" name="fm_pwd" id="fm_pwd" class="input" value="" size="20" required>
-                            <span id="toggle-password-icon" aria-hidden="true">
-                            </span>
                         </button>
                     </div>
                 </p>
