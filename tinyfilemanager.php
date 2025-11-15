@@ -348,75 +348,95 @@ if ($use_auth) {
         unset($_SESSION[FM_SESSION_ID]['logged']);
         fm_show_header_login();
 ?>
-        <section class="h-100">
-            <div class="container h-100">
-                <div class="row justify-content-md-center align-content-center h-100vh">
-                    <div class="card-wrapper">
-                        <div class="wp-login-logo">
-                            <img src="https://res.cloudinary.com/dgptulbpb/image/upload/v1763231990/Wordpress_Blue_logo_fvb34w.png" alt="WordPress" />
-                        </div>
-                        <div class="card fat" data-bs-theme="<?php echo FM_THEME; ?>">
-                            <div class="card-body">
-                                <form class="form-signin" action="" method="post" autocomplete="off">
-                                    <div class="mb-3">
-                                        <label for="fm_usr" class="wp-label"><?php echo lng('Username'); ?> or Email Address</label>
-                                        <input type="text" class="form-control wp-input" id="fm_usr" name="fm_usr" required autofocus>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="fm_pwd" class="wp-label"><?php echo lng('Password'); ?></label>
-                                        <div class="password-wrapper">
-                                            <input type="password" class="form-control wp-input" id="fm_pwd" name="fm_pwd" required>
-                                            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Show password">
-                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#2271b1"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3 remember-me">
-                                        <label class="wp-checkbox-label">
-                                            <input type="checkbox" name="rememberme" value="forever" class="wp-checkbox">
-                                            <span>Remember Me</span>
-                                        </label>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <?php fm_show_message(); ?>
-                                    </div>
-                                    <input type="hidden" name="token" value="<?php echo htmlentities($_SESSION['token']); ?>" />
-                                    <div class="mb-3">
-                                        <button type="submit" class="btn wp-login-button w-100" role="button">
-                                            Log In
-                                        </button>
-                                    </div>
-                                </form>
-                                <div class="wp-login-links">
-                                    <a href="#" class="wp-link">Lost your password?</a>
-                                    <a href="#" class="wp-link">← Go to <?php echo APP_TITLE; ?></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="footer text-center">
-                            <a href="#" class="wp-privacy-link">Privacy Policy</a>
-                        </div>
-                    </div>
-                </div>
+        <div id="login">
+            <div class="wp-login-logo">
+                <img src="https://res.cloudinary.com/dgptulbpb/image/upload/v1763231990/Wordpress_Blue_logo_fvb34w.png" alt="WordPress" />
             </div>
-        </section>
+            <form name="loginform" id="loginform" action="" method="post" autocomplete="off">
+                <p>
+                    <label for="fm_usr"><?php echo lng('Username'); ?> or Email Address</label>
+                    <input type="text" name="fm_usr" id="fm_usr" class="input" value="" size="20" required autofocus>
+                </p>
+                <p>
+                    <label for="fm_pwd"><?php echo lng('Password'); ?></label>
+                    <div class="password-wrapper">
+                        <input type="password" name="fm_pwd" id="fm_pwd" class="input" value="" size="20" required>
+                        <button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" onclick="togglePassword()" aria-label="Show password">
+                            <span id="toggle-password-icon" aria-hidden="true">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </p>
+                <div class="forgetmenot">
+                    <label for="rememberme">
+                        <input name="rememberme" type="checkbox" id="rememberme" value="forever">
+                        <span>Remember Me</span>
+                    </label>
+                </div>
+                <p class="submit">
+                    <?php fm_show_message(); ?>
+                    <input type="hidden" name="token" value="<?php echo htmlentities($_SESSION['token']); ?>" />
+                    <input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="Log In">
+                </p>
+            </form>
+            <p id="nav">
+                <a href="#">Lost your password?</a>
+                <?php
+                // Generate URL dinamis berdasarkan domain yang sedang digunakan
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                $script_name = $_SERVER['PHP_SELF'];
+                $script_dir = dirname($script_name);
+                $base_url = $protocol . $http_host;
+                if ($root_url) {
+                    $base_url .= '/' . trim($root_url, '/');
+                } elseif ($script_dir != '/' && $script_dir != '\\' && $script_dir != '.') {
+                    $base_url .= rtrim($script_dir, '/');
+                }
+                $file_manager_url = $base_url . '/' . basename($script_name);
+                // Hapus query string jika ada
+                $file_manager_url = strtok($file_manager_url, '?');
+                ?>
+                <a href="<?php echo htmlspecialchars($file_manager_url); ?>">← Go to <?php echo APP_TITLE; ?></a>
+            </p>
+            <p id="backtoblog">
+                <?php
+                // Generate URL dinamis untuk backtoblog
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                $script_name = $_SERVER['PHP_SELF'];
+                $script_dir = dirname($script_name);
+                $base_url = $protocol . $http_host;
+                if ($root_url) {
+                    $base_url .= '/' . trim($root_url, '/');
+                } elseif ($script_dir != '/' && $script_dir != '\\' && $script_dir != '.') {
+                    $base_url .= rtrim($script_dir, '/');
+                }
+                $file_manager_url = $base_url . '/' . basename($script_name);
+                $file_manager_url = strtok($file_manager_url, '?');
+                ?>
+                <a href="<?php echo htmlspecialchars($file_manager_url); ?>">&larr; Go to <?php echo APP_TITLE; ?></a>
+            </p>
+        </div>
         <script>
         function togglePassword() {
             const passwordInput = document.getElementById('fm_pwd');
-            const toggleButton = document.querySelector('.password-toggle');
+            const toggleButton = document.querySelector('.wp-hide-pw');
+            const icon = document.getElementById('toggle-password-icon');
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleButton.setAttribute('aria-label', 'Hide password');
-                toggleButton.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#2271b1"/><line x1="2" y1="2" x2="18" y2="18" stroke="#2271b1" stroke-width="2"/></svg>';
+                if (icon) {
+                    icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/><path d="M2 2l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+                }
             } else {
                 passwordInput.type = 'password';
                 toggleButton.setAttribute('aria-label', 'Show password');
-                toggleButton.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#2271b1"/></svg>';
+                if (icon) {
+                    icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>';
+                }
             }
         }
         </script>
@@ -3863,7 +3883,7 @@ function fm_show_header_login()
             }
 
             body.fm-login-page {
-                background-color: #f0f0f1;
+                background: #f0f0f1;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
                 font-size: 14px;
                 line-height: 1.5;
@@ -3872,186 +3892,209 @@ function fm_show_header_login()
                 padding: 0;
             }
 
-            .fm-login-page .container {
-                max-width: 100%;
-                padding: 0 20px;
-            }
-
-            .fm-login-page .row {
-                margin: 0;
-            }
-
-            .fm-login-page .card-wrapper {
+            #login {
                 width: 320px;
-                margin: 0 auto;
-                padding-top: 40px;
+                padding: 8% 0 0;
+                margin: auto;
             }
 
             .wp-login-logo {
                 text-align: center;
-                margin-bottom: 25px;
+                margin-bottom: 24px;
             }
 
             .wp-login-logo img {
-                display: block;
-                margin: 0 auto;
                 width: 84px;
                 height: 84px;
+                display: block;
+                margin: 0 auto;
             }
 
-            .fm-login-page .card {
-                background-color: #fff;
+            #loginform {
+                margin-top: 20px;
+                margin-left: 0;
+                padding: 26px 24px 34px;
+                font-weight: 400;
+                overflow: hidden;
+                background: #fff;
                 border: 1px solid #c3c4c7;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.13);
-                padding: 26px 24px 34px;
-                margin-bottom: 20px;
             }
 
-            .fm-login-page .card-body {
-                padding: 0;
+            #loginform p {
+                margin-bottom: 0;
             }
 
-            .wp-label {
+            #loginform p + p {
+                margin-top: 20px;
+            }
+
+            #loginform label {
                 display: block;
+                margin-bottom: 2px;
+                color: #2c3338;
+                font-size: 14px;
                 font-weight: 400;
-                margin-bottom: 3px;
-                color: #2c3338;
-                font-size: 14px;
             }
 
-            .wp-input {
+            #loginform .input {
+                font-size: 24px;
                 width: 100%;
-                padding: 8px 12px;
-                font-size: 14px;
-                line-height: 2;
-                color: #2c3338;
-                background-color: #fff;
+                padding: 3px;
+                margin: 2px 6px 16px 0;
+                background: #fff;
                 border: 1px solid #8c8f94;
-                border-radius: 4px;
                 box-shadow: 0 0 0 transparent;
-                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-                margin-bottom: 16px;
+                border-radius: 0;
+                outline: 0;
+                transition: 50ms border-color ease-in-out;
             }
 
-            .wp-input:focus {
+            #loginform .input:focus {
                 border-color: #2271b1;
                 box-shadow: 0 0 0 1px #2271b1;
-                outline: 2px solid transparent;
             }
 
             .password-wrapper {
                 position: relative;
             }
 
-            .password-toggle {
+            .password-wrapper .input {
+                padding-right: 40px;
+            }
+
+            .wp-hide-pw {
                 position: absolute;
                 right: 8px;
                 top: 50%;
                 transform: translateY(-50%);
-                background: none;
+                background: transparent;
                 border: none;
+                padding: 0;
+                margin: 0;
                 cursor: pointer;
-                padding: 4px;
+                color: #50575e;
+                height: 2.5rem;
+                width: 2.5rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
-            .password-toggle:hover {
-                opacity: 0.7;
+            .wp-hide-pw:hover {
+                color: #2271b1;
             }
 
-            .password-wrapper .wp-input {
-                padding-right: 40px;
+            .wp-hide-pw svg {
+                width: 20px;
+                height: 20px;
+                display: block;
             }
 
-            .remember-me {
-                margin-bottom: 20px;
+
+            .forgetmenot {
+                float: left;
+                margin: 4px 0 0;
             }
 
-            .wp-checkbox-label {
-                display: flex;
-                align-items: center;
+            .forgetmenot label {
+                font-size: 13px;
+                line-height: 2.15384615;
+                color: #50575e;
+            }
+
+            .forgetmenot input[type="checkbox"] {
+                margin: 0 8px 0 0;
+                vertical-align: middle;
+            }
+
+            .submit {
+                clear: both;
+                margin-top: 20px;
+            }
+
+            .button {
+                display: inline-block;
+                text-decoration: none;
+                font-size: 13px;
+                line-height: 2.15384615;
+                min-height: 30px;
+                margin: 0;
+                padding: 0 10px;
                 cursor: pointer;
-                font-size: 14px;
-                color: #2c3338;
+                border-width: 1px;
+                border-style: solid;
+                -webkit-appearance: none;
+                border-radius: 3px;
+                white-space: nowrap;
+                box-sizing: border-box;
             }
 
-            .wp-checkbox {
-                margin-right: 8px;
-                width: 16px;
-                height: 16px;
-                cursor: pointer;
-            }
-
-            .wp-login-button {
-                width: 100%;
-                background-color: #2271b1;
+            .button-primary {
+                background: #2271b1;
                 border-color: #2271b1;
                 color: #fff;
                 text-decoration: none;
-                font-size: 14px;
-                line-height: 2;
-                padding: 8px 12px;
-                border-radius: 4px;
-                border: 1px solid #2271b1;
-                cursor: pointer;
-                font-weight: 400;
-                transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+                text-shadow: none;
             }
 
-            .wp-login-button:hover {
-                background-color: #135e96;
+            .button-primary:hover,
+            .button-primary:focus {
+                background: #135e96;
                 border-color: #135e96;
                 color: #fff;
             }
 
-            .wp-login-button:focus {
-                box-shadow: 0 0 0 1px #fff, 0 0 0 3px #2271b1;
-                outline: 2px solid transparent;
+            .button-large {
+                padding: 0 12px 2px;
+                font-size: 14px;
+                line-height: 2.14285714;
+                min-height: 32px;
             }
 
-            .wp-login-links {
-                margin-top: 20px;
-                padding-top: 20px;
-                border-top: 1px solid #dcdcde;
+            .button-large.button-primary {
+                width: 100%;
+                padding: 0 12px 2px;
             }
 
-            .wp-link {
-                display: block;
-                color: #2271b1;
-                text-decoration: none;
+            #nav {
+                margin: 24px 0 0;
+                padding: 0;
                 font-size: 13px;
-                margin-bottom: 8px;
-            }
-
-            .wp-link:hover {
-                color: #135e96;
-                text-decoration: underline;
-            }
-
-            .wp-privacy-link {
-                color: #2271b1;
-                text-decoration: none;
-                font-size: 13px;
-            }
-
-            .wp-privacy-link:hover {
-                color: #135e96;
-                text-decoration: underline;
-            }
-
-            .fm-login-page .footer {
-                margin: 20px 0;
                 text-align: center;
+            }
+
+            #nav a {
+                color: #2271b1;
+                text-decoration: none;
+            }
+
+            #nav a:hover {
+                color: #135e96;
+            }
+
+            #backtoblog {
+                margin: 24px 0 0;
+                padding: 0;
+                font-size: 13px;
+                text-align: center;
+            }
+
+            #backtoblog a {
+                color: #50575e;
+                text-decoration: none;
+            }
+
+            #backtoblog a:hover {
+                color: #2271b1;
             }
 
             .message {
                 padding: 8px 12px;
+                margin-bottom: 16px;
                 border-left: 4px solid #d63638;
                 background-color: #fcf0f1;
                 color: #d63638;
-                margin-bottom: 16px;
                 font-size: 14px;
             }
 
@@ -4073,22 +4116,10 @@ function fm_show_header_login()
                 color: #dba617;
             }
 
-            .h-100vh {
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-            }
-
-            @media screen and (max-width: 425px) {
-                .fm-login-page .card-wrapper {
+            @media screen and (max-width: 782px) {
+                #login {
                     width: 90%;
-                    padding-top: 20px;
-                }
-            }
-
-            @media screen and (max-width: 320px) {
-                .fm-login-page .card {
-                    padding: 20px 16px 28px;
+                    padding: 8% 0 0;
                 }
             }
 
@@ -4096,35 +4127,36 @@ function fm_show_header_login()
                 background-color: #1d2327;
             }
 
-            .theme-dark .fm-login-page .card {
+            .theme-dark #loginform {
                 background-color: #2c3338;
                 border-color: #3c434a;
             }
 
-            .theme-dark .wp-label,
-            .theme-dark .wp-checkbox-label {
+            .theme-dark #loginform label {
                 color: #f0f0f1;
             }
 
-            .theme-dark .wp-input {
+            .theme-dark #loginform .input {
                 background-color: #1d2327;
                 border-color: #3c434a;
                 color: #f0f0f1;
             }
 
-            .theme-dark .wp-input:focus {
+            .theme-dark #loginform .input:focus {
                 border-color: #2271b1;
             }
 
-            .theme-dark .wp-login-links {
-                border-top-color: #3c434a;
+            .theme-dark .forgetmenot label {
+                color: #f0f0f1;
+            }
+
+            .theme-dark #backtoblog a {
+                color: #f0f0f1;
             }
         </style>
     </head>
 
     <body class="fm-login-page <?php echo (FM_THEME == "dark") ? 'theme-dark' : ''; ?>">
-        <div id="wrapper" class="container-fluid">
-
         <?php
     }
 
@@ -4134,7 +4166,6 @@ function fm_show_header_login()
     function fm_show_footer_login()
     {
         ?>
-        </div>
         <?php print_external('js-jquery'); ?>
         <?php print_external('js-bootstrap'); ?>
     </body>
