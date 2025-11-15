@@ -553,6 +553,41 @@ if ((isset($_SESSION[FM_SESSION_ID]['logged'], $auth_users[$_SESSION[FM_SESSION_
         }
     }
 
+    // Edit file time (modify timestamp)
+    if (isset($_POST['type']) && $_POST['type'] == "edittime" && !empty($_POST['file'])) {
+        $file = fm_clean_path($_POST['file']);
+        $path = FM_ROOT_PATH;
+        if (!empty($_POST['path'])) {
+            $relativePath = fm_clean_path($_POST['path']);
+            $path .= '/' . $relativePath;
+        }
+        $file_path = $path . '/' . $file;
+        
+        if (!file_exists($file_path)) {
+            echo json_encode(array('status' => 'error', 'message' => 'File not found'));
+            exit();
+        }
+        
+        if (isset($_POST['datetime']) && !empty($_POST['datetime'])) {
+            $datetime = $_POST['datetime'];
+            $timestamp = strtotime($datetime);
+            
+            if ($timestamp === false) {
+                echo json_encode(array('status' => 'error', 'message' => 'Invalid date/time format'));
+                exit();
+            }
+            
+            if (@touch($file_path, $timestamp)) {
+                echo json_encode(array('status' => 'success', 'message' => 'File time updated successfully', 'new_time' => date(FM_DATETIME_FORMAT, $timestamp)));
+            } else {
+                echo json_encode(array('status' => 'error', 'message' => 'Failed to update file time. Check permissions.'));
+            }
+        } else {
+            echo json_encode(array('status' => 'error', 'message' => 'Date/time not provided'));
+        }
+        exit();
+    }
+
     // Save Config
     if (isset($_POST['type']) && $_POST['type'] == "settings") {
         global $cfg, $lang, $report_errors, $show_hidden_files, $lang_list, $hide_Cols, $theme;
@@ -676,7 +711,16 @@ if ((isset($_SESSION[FM_SESSION_ID]['logged'], $auth_users[$_SESSION[FM_SESSION_
         }
 
         if ($success) {
-            $success = rename($temp_file, strtok(get_file_path(), '?'));
+            $final_path = strtok(get_file_path(), '?');
+            $success = rename($temp_file, $final_path);
+            
+            // Set file timestamp if provided
+            if ($success && isset($_REQUEST['file_datetime']) && !empty($_REQUEST['file_datetime'])) {
+                $timestamp = strtotime($_REQUEST['file_datetime']);
+                if ($timestamp !== false && file_exists($final_path)) {
+                    @touch($final_path, $timestamp);
+                }
+            }
         }
 
         if ($success) {
@@ -1076,10 +1120,26 @@ if (!empty($_FILES) && !FM_READONLY) {
                         $fullPathTarget = $fullPath;
                     }
                     rename("{$fullPath}.part", $fullPathTarget);
+                    
+                    // Set file timestamp if provided
+                    if (isset($_POST['file_datetime']) && !empty($_POST['file_datetime'])) {
+                        $timestamp = strtotime($_POST['file_datetime']);
+                        if ($timestamp !== false && file_exists($fullPathTarget)) {
+                            @touch($fullPathTarget, $timestamp);
+                        }
+                    }
                 }
             } else if (move_uploaded_file($tmp_name, $fullPath)) {
                 // Be sure that the file has been uploaded
                 if (file_exists($fullPath)) {
+                    // Set file timestamp if provided
+                    if (isset($_POST['file_datetime']) && !empty($_POST['file_datetime'])) {
+                        $timestamp = strtotime($_POST['file_datetime']);
+                        if ($timestamp !== false) {
+                            @touch($fullPath, $timestamp);
+                        }
+                    }
+                    
                     $response = array(
                         'status'    => 'success',
                         'info' => "file upload successful"
@@ -1427,6 +1487,14 @@ if (isset($_GET['upload']) && !FM_READONLY) {
                     <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
                     <input type="hidden" name="fullpath" id="fullpath" value="<?php echo fm_enc(FM_PATH) ?>">
                     <input type="hidden" name="token" value="<?php echo $_SESSION['token']; ?>">
+                    <div class="mb-3" style="padding: 10px;">
+                        <label for="file-datetime-upload" class="form-label">
+                            <i class="fa fa-calendar"></i> Set File Date/Time (Optional):
+                        </label>
+                        <input type="datetime-local" id="file-datetime-upload" name="file_datetime" class="form-control form-control-sm" 
+                               style="max-width: 300px;">
+                        <small class="form-text text-muted">Leave empty to use current date/time</small>
+                    </div>
                     <div class="fallback">
                         <input name="file" type="file" multiple />
                     </div>
@@ -1444,6 +1512,14 @@ if (isset($_GET['upload']) && !FM_READONLY) {
                             <div></div>
                         </div>
                     </form>
+                    <div class="mb-3 mt-3" style="padding: 10px;">
+                        <label for="file-datetime-url" class="form-label">
+                            <i class="fa fa-calendar"></i> Set File Date/Time (Optional):
+                        </label>
+                        <input type="datetime-local" id="file-datetime-url" name="file_datetime" class="form-control form-control-sm" 
+                               style="max-width: 300px;">
+                        <small class="form-text text-muted">Leave empty to use current date/time</small>
+                    </div>
                     <div id="js-url-upload__list" class="col-9 mt-3"></div>
                 </div>
             </div>
@@ -1466,6 +1542,13 @@ if (isset($_GET['upload']) && !FM_READONLY) {
                 this.on("sending", function(file, xhr, formData) {
                     let _path = (file.fullPath) ? file.fullPath : file.name;
                     document.getElementById("fullpath").value = _path;
+                    
+                    // Add datetime to formData if provided
+                    const datetimeInput = document.getElementById("file-datetime-upload");
+                    if (datetimeInput && datetimeInput.value) {
+                        formData.append("file_datetime", datetimeInput.value);
+                    }
+                    
                     xhr.ontimeout = (function() {
                         toast('Error: Server Timeout');
                     });
@@ -1797,7 +1880,26 @@ if (isset($_GET['view'])) {
                 <li class="list-group-item active" aria-current="true"><strong><?php echo lng($view_title) ?>:</strong> <?php echo fm_enc(fm_convert_win($file)) ?></li>
                 <?php $display_path = fm_get_display_path($file_path); ?>
                 <li class="list-group-item"><strong><?php echo $display_path['label']; ?>:</strong> <?php echo $display_path['path']; ?></li>
-                <li class="list-group-item"><strong><?php echo lng('Date Modified') ?>:</strong> <?php echo date(FM_DATETIME_FORMAT, filemtime($file_path)); ?></li>
+                <li class="list-group-item">
+                    <strong><?php echo lng('Date Modified') ?>:</strong> 
+                    <span id="file-modified-time"><?php echo date(FM_DATETIME_FORMAT, filemtime($file_path)); ?></span>
+                    <?php if (!FM_READONLY): ?>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="toggleEditTime()" id="edit-time-btn">
+                        <i class="fa fa-edit"></i> Edit Time
+                    </button>
+                    <div id="edit-time-form" style="display:none; margin-top:10px;">
+                        <input type="datetime-local" id="file-datetime" class="form-control form-control-sm" 
+                               value="<?php echo date('Y-m-d\TH:i', filemtime($file_path)); ?>" 
+                               style="display:inline-block; width:auto;">
+                        <button type="button" class="btn btn-sm btn-success ms-2" onclick="saveFileTime('<?php echo fm_enc($file); ?>', '<?php echo fm_enc(FM_PATH); ?>')">
+                            <i class="fa fa-save"></i> Save
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary ms-2" onclick="toggleEditTime()">
+                            <i class="fa fa-times"></i> Cancel
+                        </button>
+                    </div>
+                    <?php endif; ?>
+                </li>
                 <li class="list-group-item"><strong><?php echo lng('File size') ?>:</strong> <?php echo ($filesize_raw <= 1000) ? "$filesize_raw bytes" : $filesize; ?></li>
                 <li class="list-group-item"><strong><?php echo lng('MIME-type') ?>:</strong> <?php echo $mime_type ?></li>
                 <?php
@@ -1936,6 +2038,65 @@ if (isset($_GET['view'])) {
             </div>
         </div>
     </div>
+    <script>
+    function toggleEditTime() {
+        const form = document.getElementById('edit-time-form');
+        const btn = document.getElementById('edit-time-btn');
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+            btn.style.display = 'none';
+        } else {
+            form.style.display = 'none';
+            btn.style.display = 'inline-block';
+        }
+    }
+
+    function saveFileTime(fileName, filePath) {
+        const datetimeInput = document.getElementById('file-datetime');
+        const datetime = datetimeInput.value;
+        
+        if (!datetime) {
+            toast('Please select a date and time');
+            return;
+        }
+
+        const data = {
+            ajax: true,
+            type: 'edittime',
+            file: fileName,
+            path: filePath,
+            datetime: datetime,
+            token: window.csrf
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: window.location.href.split('?')[0],
+            data: data,
+            success: function(response) {
+                try {
+                    const result = typeof response === 'string' ? JSON.parse(response) : response;
+                    if (result.status === 'success') {
+                        document.getElementById('file-modified-time').textContent = result.new_time;
+                        toggleEditTime();
+                        toast('File time updated successfully');
+                        // Reload page after 1 second to show updated time
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        toast('Error: ' + (result.message || 'Failed to update file time'));
+                    }
+                } catch (e) {
+                    toast('Error: Invalid response from server');
+                }
+            },
+            error: function(xhr, status, error) {
+                toast('Error: ' + (xhr.responseText || error));
+            }
+        });
+    }
+    </script>
 <?php
     fm_show_footer();
     exit;
@@ -5182,10 +5343,18 @@ function fm_show_header_login()
             function upload_from_url($this) {
                 let form = $($this),
                     resultWrapper = $("div#js-url-upload__list");
+                
+                // Get datetime value if provided
+                let datetimeValue = '';
+                const datetimeInput = document.getElementById("file-datetime-url");
+                if (datetimeInput && datetimeInput.value) {
+                    datetimeValue = "&file_datetime=" + encodeURIComponent(datetimeInput.value);
+                }
+                
                 $.ajax({
                     type: form.attr('method'),
                     url: form.attr('action'),
-                    data: form.serialize() + "&token=" + window.csrf + "&ajax=" + true,
+                    data: form.serialize() + "&token=" + window.csrf + "&ajax=" + true + datetimeValue,
                     beforeSend: function() {
                         form.find("input[name=uploadurl]").attr("disabled", "disabled");
                         form.find("button").hide();
@@ -5791,7 +5960,7 @@ function fm_show_header_login()
         $tr['en']['Invalid characters in file or folder name']      = 'Invalid characters in file or folder name';
         $tr['en']['Operations with archives are not available']     = 'Operations with archives are not available';
         $tr['en']['File or folder with this path already exists']   = 'File or folder with this path already exists';
-        $tr['en']['Are you sure want to rename?']                   = 'Are you sure want to rename file?';
+        $tr['en']['Are you sure want to rename?']                   = 'Are you sure want to rename?';
         $tr['en']['Are you sure want to']                           = 'Are you sure want to';
         $tr['en']['Date Modified']                                  = 'Date Modified';
         $tr['en']['File size']                                      = 'File size';
